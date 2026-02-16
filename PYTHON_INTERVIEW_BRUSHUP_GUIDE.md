@@ -99,6 +99,39 @@ def has_pair(nums, target):
     return False
 ```
 
+### Flatten Nested List Iterator (Arbitrary Nesting)
+Use an explicit stack so values are produced lazily in order, without flattening everything up front.
+
+```python
+from collections.abc import Iterator
+
+
+class NestedIterator(Iterator[int]):
+    def __init__(self, nested):
+        # Reverse so we can pop from the end and still read left-to-right.
+        self.stack = list(reversed(nested))
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        while self.stack:
+            top = self.stack.pop()
+            if isinstance(top, int):
+                return top
+            # `top` is a nested list: push its items in reverse order.
+            self.stack.extend(reversed(top))
+        raise StopIteration
+
+
+data = [1, [2, [3, 4], 5], 6]
+print(list(NestedIterator(data)))  # [1, 2, 3, 4, 5, 6]
+```
+
+Complexity:
+- `next()`: amortized `O(1)` over the full traversal.
+- Space: `O(d)` to `O(n)` depending on nesting/shape of input.
+
 ---
 
 ## 2) Language Internals
