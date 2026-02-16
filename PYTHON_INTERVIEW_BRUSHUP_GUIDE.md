@@ -258,6 +258,70 @@ print(list(combinations([1, 2, 3], 2)))
 # [(1, 2), (1, 3), (2, 3)]
 ```
 
+---
+
+## 6) Interview Problem: Flatten Nested Integers Iterator
+
+Given a nested list like:
+
+```python
+[1, [2, [3, 4], 5], 6]
+```
+
+build an iterator that returns values one-by-one as:
+
+```text
+1, 2, 3, 4, 5, 6
+```
+
+Use a stack to avoid recursion limits and keep iteration lazy.
+
+```python
+from collections.abc import Iterator
+
+
+class NestedIterator(Iterator[int]):
+    def __init__(self, nested_list):
+        self._stack = [iter(nested_list)]
+        self._next_val = None
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self._next_val is None and not self._advance():
+            raise StopIteration
+
+        value = self._next_val
+        self._next_val = None
+        return value
+
+    def _advance(self):
+        while self._stack:
+            try:
+                item = next(self._stack[-1])
+            except StopIteration:
+                self._stack.pop()
+                continue
+
+            if isinstance(item, int):
+                self._next_val = item
+                return True
+
+            self._stack.append(iter(item))
+
+        return False
+
+
+# Example usage
+nested = [1, [2, [3, 4], 5], 6]
+print(list(NestedIterator(nested)))
+# [1, 2, 3, 4, 5, 6]
+```
+
+Time complexity: `O(n)` total for `n` integers/lists visited.  
+Space complexity: `O(d)` where `d` is max nesting depth (stack of iterators).
+
 ### `functools.lru_cache`
 Memoization decorator for pure functions.
 
